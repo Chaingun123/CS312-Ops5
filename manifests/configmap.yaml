@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minecraft-config
+data:
+  EULA: "TRUE"
+  MOTD: "Gunnar Chain - CS312"
+  VERSION: "1.21.4"
+  MEMORY: "2G"
+  TYPE: "PAPER"

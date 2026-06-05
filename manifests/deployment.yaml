@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft
+  labels:
+    app: minecraft
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: minecraft
+  template:
+    metadata:
+      labels:
+        app: minecraft
+    spec:
+      containers:
+        - name: minecraft
+          image: 262030799086.dkr.ecr.us-east-1.amazonaws.com/cs312-minecraft:mc-1.21.4-2
+          ports:
+            - containerPort: 25565
+              name: minecraft
+          envFrom:
+            - configMapRef:
+                name: minecraft-config
+          volumeMounts:
+            - name: minecraft-data
+              mountPath: /data
+          startupProbe:
+            tcpSocket:
+              port: 25565
+            #minecraft should start up in less than 450 seconds
+            failureThreshold: 45
+            periodSeconds: 10
+            #check if minecraft is alive
+          livenessProbe:
+            tcpSocket:
+              port: 25565
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 25565
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              #2gi initial 3gi max
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "3Gi"
+              cpu: "2000m"
+      volumes:
+        - name: minecraft-data
+          persistentVolumeClaim:
+            claimName: minecraft-data

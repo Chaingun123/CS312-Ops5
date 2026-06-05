@@ -1,0 +1,35 @@
+#used claude to explore backup options by asking about "ways to backup a kubernetes PVC to s3"
+#After finding out about kubernetes cron jobs I copied the example script from kubernetes docs
+#and edited to fit my scenario
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: minecraft-backup
+spec:
+  schedule: "*/10 * * * *"
+  #had an issue with the cron pods cluttering get pods
+  successfulJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: amazon/aws-cli
+            imagePullPolicy: IfNotPresent
+            env:
+            - name: AWS_REGION
+              value: us-east-1
+            command:
+            - /bin/sh
+            - -c
+            - aws s3 sync /data/ s3://mc-backups-1/world/
+            volumeMounts:
+            - name: world
+              mountPath: /data
+              readOnly: true
+          restartPolicy: OnFailure
+          volumes:
+          - name: world
+            persistentVolumeClaim:
+              claimName: minecraft-data
