@@ -64,8 +64,8 @@ spec:
             - name: EXPORT_SERVERS
               value: "localhost:25565"
           ports:
-        - name: metrics
-          containerPort: 8080
+            - name: metrics
+              containerPort: 8080
       volumes:
         - name: minecraft-data
           persistentVolumeClaim:
