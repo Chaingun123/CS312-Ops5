@@ -124,11 +124,16 @@ resource "aws_instance" "minecraft" {
   runcmd:
     - curl -L -o /usr/local/bin/ecr-credential-provider https://github.com/dntosas/ecr-credential-provider/releases/download/v1.2.0/ecr-credential-provider-linux-amd64
     - chmod 0755 /usr/local/bin/ecr-credential-provider
-    - curl -sfL https://get.k3s.io | sh -
-    - git clone https://github.com/Chaingun123/CS312-Ops4.git /opt/ops4/
+    - curl -sfL https://get.k3s.io | sh
+    - git clone https://github.com/Chaingun123/CS312-Ops5.git /opt/ops5/
     - sleep 5
-    - cp /opt/ops4/manifests/*.yaml /var/lib/rancher/k3s/server/manifests
-
+    - cp /opt/ops5/manifests/*.yaml /var/lib/rancher/k3s/server/manifests
+    - export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+    - until kubectl get nodes 2>/dev/null | grep -q ' Ready'; do sleep 5; done
+    - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    - helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    - helm repo update
+    - helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace -f /opt/ops5/monitoring/values.yaml
   EOF
 
   root_block_device {

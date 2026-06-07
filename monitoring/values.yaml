@@ -1,0 +1,26 @@
+prometheus:
+  prometheusSpec:
+    podMonitorSelectorNilUsesHelmValues: false 
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    
+    scrape_interval: 30s
+    retention: 7d
+
+grafana:
+  adminPassword: cs312
+
+  service:
+    type: ClusterIP
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+ 
+  persistence:
+    enabled: true
+    size: 1Gi
+

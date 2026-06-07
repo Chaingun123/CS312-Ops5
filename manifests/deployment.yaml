@@ -55,6 +55,17 @@ spec:
             limits:
               memory: "3Gi"
               cpu: "2000m"
+          #add in the minecraft monitoring probe
+        - name: mc-monitor
+          image: itzg/mc-monitor
+          #from readme of mc-monitor
+          args: ["export-for-prometheus"]
+          env:
+            - name: EXPORT_SERVERS
+              value: "localhost:25565"
+          ports:
+        - name: metrics
+          containerPort: 8080
       volumes:
         - name: minecraft-data
           persistentVolumeClaim:
