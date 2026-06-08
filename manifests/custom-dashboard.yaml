@@ -804,7 +804,7 @@ data:
         ],
         "title": "CPU usage %",
         "type": "gauge"
-        }
+      }
       ],
       "preload": false,
       "refresh": "10s",
