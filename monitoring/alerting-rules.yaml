@@ -1,0 +1,62 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cs312-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: cs312.rules
+      rules:
+        - alert: PodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="default"}[5m]) > 3
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.pod }} is crash looping"
+            runbook: |
+              1. Run: kubectl describe pod {{ $labels.pod }} -n {{ $labels.namespace }}
+              2. Check Events section for error messages
+              3. Check logs: kubectl logs {{ $labels.pod }} --previous
+              4. If bad image, rollback: kubectl rollout undo deployment/<name>
+
+        - alert: HighNodeCPU
+          expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node CPU usage above 80% for 2 minutes"
+            runbook: |
+              1. Run: kubectl top pods --all-namespaces --sort-by=cpu
+              2. Identify the Pod consuming the most CPU
+              3. Check if it is expected (build, migration) or unexpected (infinite loop)
+              4. If unexpected, check resource limits and consider scaling
+
+        - alert: PodNotReady
+          expr: kube_pod_status_ready{namespace="default", condition="true", pod!~".*backup.*"} == 0
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} is not ready"
+            runbook: |
+              1. Run: kubectl describe pod {{ $labels.pod }} -n {{ $labels.namespace }}
+              2. Check readiness probe configuration and recent events
+              3. Check logs: kubectl logs {{ $labels.pod }}
+              4. If the Pod is failing to start, check image and config
+
+        - alert: MinecraftStatusDown
+          expr: minecraft_status_healthy == 0
+          for: 1m
+          lables:
+            severity: critical 
+          annotations:
+            summary: "Minecraft server is not responding"
+            runbook: |
+              1. Double check the minecraft_status_healthy data in grafana
+              2. check that the pod is actually alive: kubectl get pods -n default -l app=minecraft
+              3. Check if pod has crashed due to OOM or JVM: kubectl logs {{ $labels.pod }}
+              4. restart the pod if it is frozen, continue to elevated troubleshooting like rollback if that does not work
