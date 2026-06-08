@@ -37,7 +37,7 @@ spec:
 
         - alert: PodNotReady
           expr: kube_pod_status_ready{namespace="default", condition="true", pod!~".*backup.*"} == 0
-          for: 1m
+          for: 5m
           labels:
             severity: warning
           annotations:
