@@ -8,7 +8,13 @@ prometheus:
     retention: 7d
 
 grafana:
+  #password hardwired because there is no assignment requirement for secrets
   adminPassword: cs312
+  #wire in the custom dashboard
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
 
   service:
     type: ClusterIP
