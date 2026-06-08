@@ -51,7 +51,7 @@ spec:
         - alert: MinecraftStatusDown
           expr: minecraft_status_healthy == 0
           for: 1m
-          lables:
+          labels:
             severity: critical 
           annotations:
             summary: "Minecraft server is not responding"
